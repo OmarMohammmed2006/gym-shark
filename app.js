@@ -1489,7 +1489,21 @@ const App = {
   state: { cals:[], wkouts:[], weights:[], seqIdx:0 },
 
   init() {
-    chartDefaults();
+    // Attach login listener immediately so it never fails to attach
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const u   = document.getElementById('username').value;
+        const p   = document.getElementById('password').value;
+        const err = document.getElementById('login-error');
+        if (Auth.login(u, p)) { err.classList.add('hidden'); this._launch(); }
+        else { err.classList.remove('hidden'); document.getElementById('password').value=''; document.getElementById('password').focus(); }
+      });
+    }
+
+    try { chartDefaults(); } catch (e) { console.warn('Chart.js defaults error:', e); }
+
     if (!Auth.ok()) { this._showLogin(); return; }
     this._launch();
   },
@@ -1497,14 +1511,6 @@ const App = {
   _showLogin() {
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('app').classList.add('hidden');
-    document.getElementById('login-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const u   = document.getElementById('username').value;
-      const p   = document.getElementById('password').value;
-      const err = document.getElementById('login-error');
-      if (Auth.login(u, p)) { err.classList.add('hidden'); this._launch(); }
-      else { err.classList.remove('hidden'); document.getElementById('password').value=''; document.getElementById('password').focus(); }
-    });
   },
 
   _launch() {
@@ -1512,8 +1518,8 @@ const App = {
     document.getElementById('app').classList.remove('hidden');
     this.loadData();
     this._renderTab();
-    Notifications.check(this.state.cals, this.state.wkouts, this.state.weights);
-    SyncManager.checkReminder();
+    try { Notifications.check(this.state.cals, this.state.wkouts, this.state.weights); } catch(e){}
+    try { SyncManager.checkReminder(); } catch(e){}
   },
 
   loadData() {
@@ -1526,7 +1532,7 @@ const App = {
   refreshAll() {
     this.loadData();
     this._renderTab();
-    Notifications.check(this.state.cals, this.state.wkouts, this.state.weights);
+    try { Notifications.check(this.state.cals, this.state.wkouts, this.state.weights); } catch(e){}
   },
 
   refreshWkout() {
