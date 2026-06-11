@@ -25,12 +25,6 @@ You should see: `✓ Setup complete! All tables created.`
 
 ---
 
-## 🔐 Login
-
-- **Username:** omar
-- **Password:** omar12345
-
----
 
 ## 📱 Features
 
