@@ -187,7 +187,7 @@ const DB = {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `gymtrack_backup_${U.today()}.json`;
+    a.download = \`gymtrack_backup_\${U.today()}.json\`;
     a.click();
     URL.revokeObjectURL(url);
     toast('✅ Backup exported! Transfer this file to your other device.', 'success', 5000);
@@ -285,7 +285,7 @@ const U = {
   },
   ytId(url) {
     if (!url) return null;
-    const m = url.match(/(?:youtu\.be\/|v=)([a-zA-Z0-9_-]{11})/);
+    const m = url.match(/(?:youtu\\.be\\/|v=)([a-zA-Z0-9_-]{11})/);
     return m ? m[1] : null;
   },
 };
@@ -298,8 +298,8 @@ function toast(msg, type = 'info', ms = 3500) {
   if (!c) return;
   const icons = { info:'ℹ️', success:'✅', warning:'⚠️', error:'❌' };
   const el = document.createElement('div');
-  el.className = `toast toast-${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  el.className = \`toast toast-\${type}\`;
+  el.innerHTML = \`<span class="toast-icon">\${icons[type]||'ℹ️'}</span><span>\${msg}</span>\`;
   c.appendChild(el);
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('toast-visible')));
   setTimeout(() => {
@@ -333,22 +333,22 @@ const SyncManager = {
     const calLogs  = db.calorie_logs.length;
     const wgtLogs  = db.weight_logs.length;
 
-    badge.innerHTML = `
-      <div class="sync-device">${device} <span class="sync-device-badge">This Device</span></div>
+    badge.innerHTML = \`
+      <div class="sync-device">\${device} <span class="sync-device-badge">This Device</span></div>
       <div class="sync-counts">
-        <span>💪 ${sessions} sessions</span>
-        <span>🔥 ${calLogs} cal logs</span>
-        <span>⚖️ ${wgtLogs} weight logs</span>
+        <span>💪 \${sessions} sessions</span>
+        <span>🔥 \${calLogs} cal logs</span>
+        <span>⚖️ \${wgtLogs} weight logs</span>
       </div>
-      <div class="sync-last ${days !== null && days >= CONFIG.SYNC_REMIND_DAYS ? 'sync-due' : ''}">
-        ${days === null
+      <div class="sync-last \${days !== null && days >= CONFIG.SYNC_REMIND_DAYS ? 'sync-due' : ''}">
+        \${days === null
           ? '⚠️ Never exported — export your data now!'
           : days === 0 ? '✅ Exported today'
           : days >= CONFIG.SYNC_REMIND_DAYS
-            ? `⚠️ Last export: ${days} days ago — sync overdue!`
-            : `✅ Last export: ${days} day${days !== 1 ? 's' : ''} ago`}
+            ? \`⚠️ Last export: \${days} days ago — sync overdue!\`
+            : \`✅ Last export: \${days} day\${days !== 1 ? 's' : ''} ago\`}
       </div>
-    `;
+    \`;
   },
 
   doExport() { DB.export(); this._renderStatus(); },
@@ -372,7 +372,7 @@ const SyncManager = {
     if (days === null) {
       setTimeout(() => toast('📤 Tip: export your data regularly to sync between devices!', 'info', 6000), 3000);
     } else if (days >= CONFIG.SYNC_REMIND_DAYS) {
-      setTimeout(() => toast(`⚠️ ${days} days since last export — time to sync!`, 'warning', 7000), 2000);
+      setTimeout(() => toast(\`⚠️ \${days} days since last export — time to sync!\`, 'warning', 7000), 2000);
     }
   },
 };
@@ -405,7 +405,7 @@ const Notifications = {
     const days = DB.daysSinceExport();
     if (days === null || days >= CONFIG.SYNC_REMIND_DAYS) {
       this.items.push({ id:'sync', icon:'📤', title:'Data Sync Reminder',
-        msg: days === null ? 'Never exported your data yet.' : `${days} days since last export.`,
+        msg: days === null ? 'Never exported your data yet.' : \`\${days} days since last export.\`,
         label:'Open sync', tab:null, action:'sync' });
     }
 
@@ -417,18 +417,18 @@ const Notifications = {
     if (!el) return;
     el.innerHTML = this.items.length === 0
       ? '<p class="notif-empty">🎉 All caught up!</p>'
-      : this.items.map(n => `
+      : this.items.map(n => \`
           <div class="notif-item">
-            <div class="notif-item-icon">${n.icon}</div>
+            <div class="notif-item-icon">\${n.icon}</div>
             <div class="notif-item-body">
-              <div class="notif-item-title">${n.title}</div>
-              <div class="notif-item-msg">${n.msg}</div>
+              <div class="notif-item-title">\${n.title}</div>
+              <div class="notif-item-msg">\${n.msg}</div>
               <button class="notif-action-btn"
-                onclick="Notifications._act('${n.id}','${n.tab}','${n.action||''}')">
-                ${n.label} →
+                onclick="Notifications._act('\${n.id}','\${n.tab}','\${n.action||''}')">
+                \${n.label} →
               </button>
             </div>
-          </div>`).join('');
+          </div>\`).join('');
   },
 
   _act(id, tab, action) {
@@ -478,9 +478,15 @@ function chartDefaults() {
 // 10. DASHBOARD
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const Dashboard = {
-  weightChart: null, calChart: null,
+  charts: {},
+
+  _destroy() {
+    Object.values(this.charts).forEach(c => { try { c.destroy(); } catch {} });
+    this.charts = {};
+  },
 
   render(cals, wkouts, weights, seqIdx) {
+    this._destroy();
     const el = document.getElementById('dashboard-content');
     if (!el) return;
 
@@ -510,99 +516,182 @@ const Dashboard = {
       ? (weights[0].weight_kg - weights[weights.length-1].weight_kg).toFixed(1) : null;
     const nw = WORKOUTS[seqIdx];
 
-    el.innerHTML = `
+    // Analytics calculations (last 30 days)
+    const last30 = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      last30.push(d.toISOString().split('T')[0]);
+    }
+    const loggedDays  = last30.filter(d => cals.some(l => l.date === d));
+    const onTarget    = loggedDays.filter(d => {
+      const c = cals.find(l => l.date === d);
+      return c && Math.abs(c.calories_consumed - CONFIG.TARGET_KCAL) <= 250;
+    });
+    const avgCals = loggedDays.length > 0
+      ? Math.round(loggedDays.reduce((s, d) => s + (cals.find(l=>l.date===d)?.calories_consumed||0), 0) / loggedDays.length)
+      : 0;
+    const hitRate = loggedDays.length > 0 ? Math.round((onTarget.length / loggedDays.length) * 100) : 0;
+
+    el.innerHTML = \`
+      <!-- GREETING -->
       <div class="dash-greeting">
         <div>
-          <div class="dash-title">Good ${U.greeting()}, Omar 👊</div>
-          <div class="dash-date">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+          <div class="dash-title">Good \${U.greeting()}, Omar 👊</div>
+          <div class="dash-date">\${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
         </div>
         <div class="dash-streak">
-          <span class="streak-num">${streak}</span>
+          <span class="streak-num">\${streak}</span>
           <span class="streak-label">day streak 🔥</span>
         </div>
       </div>
 
+      <!-- QUICK STATS -->
       <div class="stats-grid" style="margin-bottom:10px">
-        <div class="stat-card ${consumed > 0 ? 'stat-yellow' : ''}">
+        <div class="stat-card \${consumed > 0 ? 'stat-yellow' : ''}">
           <div class="stat-icon">🔥</div>
-          <div class="stat-val">${consumed > 0 ? consumed.toLocaleString() : '—'}</div>
+          <div class="stat-val">\${consumed > 0 ? consumed.toLocaleString() : '—'}</div>
           <div class="stat-label">Calories Today</div>
-          <div class="stat-sub">Target: ${CONFIG.TARGET_KCAL}</div>
+          <div class="stat-sub">Target: \${CONFIG.TARGET_KCAL}</div>
         </div>
-        <div class="stat-card ${todayWkout?.completed ? 'stat-green' : ''}">
+        <div class="stat-card \${todayWkout?.completed ? 'stat-green' : ''}">
           <div class="stat-icon">💪</div>
-          <div class="stat-val">${weekWkouts.length}</div>
+          <div class="stat-val">\${weekWkouts.length}</div>
           <div class="stat-label">Sessions This Week</div>
           <div class="stat-sub">Goal: 4 per week</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">⚖️</div>
-          <div class="stat-val">${wgt} <small style="font-size:14px;font-weight:600;color:var(--text-2)">kg</small></div>
+          <div class="stat-val">\${wgt}<small style="font-size:14px;font-weight:600;color:var(--text-2)">kg</small></div>
           <div class="stat-label">Current Weight</div>
-          <div class="stat-sub">${wgtChange ? `${wgtChange > 0 ? '+' : ''}${wgtChange} kg total` : 'Starting weight'}</div>
+          <div class="stat-sub">\${wgtChange ? \`\${+wgtChange > 0 ? '+' : ''}\${wgtChange} kg\` : 'Starting'}</div>
         </div>
-        <div class="stat-card ${burned > 0 ? 'stat-blue' : ''}">
+        <div class="stat-card \${burned > 0 ? 'stat-blue' : ''}">
           <div class="stat-icon">⚡</div>
-          <div class="stat-val">${burned > 0 ? burned : '—'}</div>
+          <div class="stat-val">\${burned > 0 ? burned : '—'}</div>
           <div class="stat-label">Burned Today</div>
-          <div class="stat-sub">${burned > 0 ? 'From workout' : 'Rest day'}</div>
+          <div class="stat-sub">\${burned > 0 ? 'From workout' : 'Rest day'}</div>
         </div>
       </div>
 
+      <!-- TODAY SUMMARY -->
       <div class="section-header">Today's Summary</div>
       <div class="today-card">
         <div class="today-row">
           <div class="today-item">
             <div class="today-label">Consumed</div>
-            <div class="today-value text-yellow">${consumed > 0 ? consumed + ' kcal' : 'Not logged'}</div>
+            <div class="today-value text-yellow">\${consumed > 0 ? consumed + ' kcal' : 'Not logged'}</div>
           </div>
           <div class="today-sep">−</div>
           <div class="today-item">
             <div class="today-label">Burned</div>
-            <div class="today-value text-green">${burned > 0 ? burned + ' kcal' : '0 kcal'}</div>
+            <div class="today-value text-green">\${burned > 0 ? burned + ' kcal' : '0 kcal'}</div>
           </div>
           <div class="today-sep">=</div>
           <div class="today-item">
             <div class="today-label">Net</div>
-            <div class="today-value ${consumed > 0 && net > CONFIG.TARGET_KCAL + 200 ? 'text-red' : ''}">${consumed > 0 ? net + ' kcal' : '—'}</div>
+            <div class="today-value \${consumed > 0 && net > CONFIG.TARGET_KCAL + 200 ? 'text-red' : ''}">\${consumed > 0 ? net + ' kcal' : '—'}</div>
           </div>
         </div>
         <div class="cal-bar-wrap">
-          <div class="cal-bar" style="width:${barPct}%"></div>
+          <div class="cal-bar" style="width:\${barPct}%"></div>
         </div>
         <div class="cal-bar-labels">
           <span>0</span>
-          <span>${CONFIG.TARGET_KCAL} kcal target</span>
-          <span>${CONFIG.TDEE}</span>
+          <span>\${CONFIG.TARGET_KCAL} kcal target</span>
+          <span>\${CONFIG.TDEE}</span>
         </div>
       </div>
 
+      <!-- NEXT WORKOUT -->
       <div class="section-header">Next Workout</div>
-      <div class="next-workout-card" style="--wc:${nw.color}" onclick="App.switchTab('workout')">
-        <div class="nw-badge" style="background:${nw.bg};color:${nw.color};border:1px solid ${nw.border}">${nw.label}</div>
-        <div class="nw-focus">${nw.focus}</div>
+      <div class="next-workout-card" style="--wc:\${nw.color}" onclick="App.switchTab('workout')">
+        <div class="nw-badge" style="background:\${nw.bg};color:\${nw.color};border:1px solid \${nw.border}">\${nw.label}</div>
+        <div class="nw-focus">\${nw.focus}</div>
         <div class="nw-meta">
-          <span>🔥 ~${nw.kcal} kcal</span>
+          <span>🔥 ~\${nw.kcal} kcal</span>
           <span>⏱ 55–65 min</span>
-          <span>💪 ${nw.exercises.length - 1} exercises + cardio</span>
+          <span>💪 \${nw.exercises.length - 1} exercises + cardio</span>
         </div>
-        <div class="nw-cta" style="color:${nw.color}">Tap to start →</div>
+        <div class="nw-cta" style="color:\${nw.color}">Tap to start →</div>
       </div>
 
+      <!-- THIS WEEK -->
       <div class="section-header">This Week</div>
-      <div class="week-grid" style="margin-bottom:16px">${this._weekGrid(cals, wkouts)}</div>
+      <div class="week-grid" style="margin-bottom:6px">\${this._weekGrid(cals, wkouts)}</div>
 
-      ${weights.length >= 2 ? `
-      <div class="section-header">Weight Trend</div>
-      <div class="chart-card"><canvas id="dash-wgt-chart" height="110"></canvas></div>` : ''}
+      <!-- ══════════ ANALYTICS SECTION ══════════ -->
+      <div class="section-header" style="margin-top:22px">📊 Analytics</div>
 
-      ${cals.length >= 2 ? `
-      <div class="section-header">7-Day Calories</div>
-      <div class="chart-card"><canvas id="dash-cal-chart" height="110"></canvas></div>` : ''}
-    `;
+      <!-- ANALYTICS STATS ROW -->
+      \${loggedDays.length > 0 ? \`
+      <div class="analytics-row">
+        <div class="ana-card">
+          <div class="ana-val">\${avgCals > 0 ? avgCals.toLocaleString() : '—'}</div>
+          <div class="ana-label">Avg Daily Kcal</div>
+          <div class="ana-sub">Last 30 days</div>
+        </div>
+        <div class="ana-card">
+          <div class="ana-val \${hitRate >= 60 ? 'text-green' : hitRate >= 40 ? 'text-yellow' : 'text-red'}">\${hitRate}%</div>
+          <div class="ana-label">On-Target Rate</div>
+          <div class="ana-sub">±250 kcal of goal</div>
+        </div>
+        <div class="ana-card">
+          <div class="ana-val">\${loggedDays.length}</div>
+          <div class="ana-label">Days Logged</div>
+          <div class="ana-sub">Last 30 days</div>
+        </div>
+        <div class="ana-card">
+          <div class="ana-val">\${wkouts.filter(s=>s.completed).length}</div>
+          <div class="ana-label">Total Sessions</div>
+          <div class="ana-sub">All time</div>
+        </div>
+      </div>\` : ''}
 
-    if (weights.length >= 2) this._wgtChart(weights.slice(0,10).reverse());
-    if (cals.length >= 2)    this._calChart(cals);
+      <!-- 30-DAY CALORIE CHART -->
+      <div class="chart-card" style="margin-bottom:10px">
+        <div class="chart-header">
+          <span class="chart-title">🔥 Calories — Last 30 Days</span>
+          <span class="chart-legend-item"><span class="cl-dot" style="background:#F5C518"></span>On target</span>
+          <span class="chart-legend-item"><span class="cl-dot" style="background:#FF3B30"></span>Over</span>
+        </div>
+        <canvas id="dash-cal30-chart" height="130"></canvas>
+      </div>
+
+      <!-- CALORIE vs NET LINE CHART -->
+      \${cals.length >= 3 ? \`
+      <div class="chart-card" style="margin-bottom:10px">
+        <div class="chart-header">
+          <span class="chart-title">⚡ Consumed vs Net Calories</span>
+        </div>
+        <canvas id="dash-net-chart" height="120"></canvas>
+      </div>\` : ''}
+
+      <!-- WEEKLY SESSIONS CHART -->
+      \${wkouts.filter(s=>s.completed).length >= 1 ? \`
+      <div class="chart-card" style="margin-bottom:10px">
+        <div class="chart-header">
+          <span class="chart-title">💪 Workout Frequency — Last 8 Weeks</span>
+          <span class="chart-legend-item"><span class="cl-dot" style="background:#00C853"></span>Sessions</span>
+        </div>
+        <canvas id="dash-freq-chart" height="110"></canvas>
+      </div>\` : ''}
+
+      <!-- WEIGHT TREND -->
+      \${weights.length >= 2 ? \`
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">⚖️ Weight Trend</span>
+          \${wgtChange !== null ? \`<span class="chart-badge \${+wgtChange < 0 ? 'badge-green' : +wgtChange > 0 ? 'badge-red' : ''}">\${+wgtChange > 0 ? '+' : ''}\${wgtChange} kg</span>\` : ''}
+        </div>
+        <canvas id="dash-wgt-chart" height="120"></canvas>
+      </div>\` : ''}
+    \`;
+
+    // Render all charts
+    this._cal30Chart(cals);
+    if (cals.length >= 3) this._netChart(cals, wkouts);
+    if (wkouts.filter(s=>s.completed).length >= 1) this._freqChart(wkouts);
+    if (weights.length >= 2) this._wgtChart(weights.slice().reverse());
   },
 
   _weekGrid(cals, wkouts) {
@@ -610,8 +699,8 @@ const Dashboard = {
     const today = new Date(); const base = new Date(today);
     base.setDate(today.getDate() - today.getDay());
     return days.map((day, i) => {
-      const d   = new Date(base); d.setDate(base.getDate() + i);
-      const ds  = d.toISOString().split('T')[0];
+      const d  = new Date(base); d.setDate(base.getDate() + i);
+      const ds = d.toISOString().split('T')[0];
       const isToday  = ds === U.today();
       const isFuture = d > today;
       const hasCal   = cals.some(l => l.date === ds);
@@ -620,48 +709,167 @@ const Dashboard = {
       if (hasWk && hasCal) cls = 'week-day-full';
       else if (hasWk)      cls = 'week-day-wkout';
       else if (hasCal)     cls = 'week-day-cal';
-      return `<div class="week-day ${cls} ${isToday?'week-day-today':''} ${isFuture?'week-day-future':''}">
-        <div class="wd-name">${day}</div>
+      return \`<div class="week-day \${cls} \${isToday?'week-day-today':''} \${isFuture?'week-day-future':''}">
+        <div class="wd-name">\${day}</div>
         <div class="wd-dot"></div>
-        ${hasWk  ? '<div class="wd-icon">💪</div>' : ''}
-        ${hasCal ? '<div class="wd-icon">🔥</div>' : ''}
-      </div>`;
+        \${hasWk  ? '<div class="wd-icon">💪</div>' : ''}
+        \${hasCal ? '<div class="wd-icon">🔥</div>' : ''}
+      </div>\`;
     }).join('');
   },
 
-  _wgtChart(data) {
-    const ctx = document.getElementById('dash-wgt-chart');
+  // 30-day calorie bar chart
+  _cal30Chart(cals) {
+    const ctx = document.getElementById('dash-cal30-chart');
     if (!ctx) return;
-    if (this.weightChart) this.weightChart.destroy();
-    this.weightChart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: data.map(w => U.fmtShort(w.date)),
-        datasets: [{ data: data.map(w => +w.weight_kg),
-          borderColor:'#F5C518', backgroundColor:'rgba(245,197,24,0.08)',
-          borderWidth:2, pointBackgroundColor:'#F5C518', pointRadius:4, tension:0.35, fill:true }]},
-      options: { responsive:true, scales: { x:{grid:{display:false}}, y:{ticks:{callback:v=>v+'kg'}} } }
+    const labels = [], vals = [], colors = [];
+    const t = CONFIG.TARGET_KCAL;
+    for (let i = 29; i >= 0; i--) {
+      const d  = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      const v  = cals.find(l => l.date === ds)?.calories_consumed ?? 0;
+      labels.push(i % 5 === 0 ? U.fmtShort(ds) : '');
+      vals.push(v);
+      colors.push(v === 0
+        ? 'rgba(255,255,255,0.05)'
+        : Math.abs(v - t) <= 250
+          ? 'rgba(245,197,24,0.8)'
+          : v > t + 250
+            ? 'rgba(255,59,48,0.75)'
+            : 'rgba(41,121,255,0.65)');
+    }
+    this.charts.cal30 = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [
+        { data: vals, backgroundColor: colors, borderRadius: 3, borderSkipped: 'bottom' },
+        { data: Array(30).fill(t), type: 'line',
+          borderColor: 'rgba(245,197,24,0.4)', borderDash: [4,4],
+          borderWidth: 1.5, pointRadius: 0, fill: false },
+      ]},
+      options: {
+        responsive: true, animation: { duration: 600 },
+        plugins: { tooltip: { callbacks: {
+          title: (items) => {
+            const i = items[0].dataIndex;
+            const d = new Date(); d.setDate(d.getDate() - (29 - i));
+            return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+          },
+          label: (item) => item.datasetIndex === 0
+            ? (item.raw === 0 ? 'Not logged' : \`\${item.raw.toLocaleString()} kcal\`)
+            : \`Target: \${t} kcal\`,
+        }}},
+        scales: {
+          x: { grid:{display:false}, ticks:{font:{size:10}} },
+          y: { min: 0, ticks:{callback:v=>v?v+'k'.replace('1000k','1k'):''} }
+        }
+      }
     });
   },
 
-  _calChart(cals) {
-    const ctx = document.getElementById('dash-cal-chart');
+  // Consumed vs Net line chart (last 14 days with data)
+  _netChart(cals, wkouts) {
+    const ctx = document.getElementById('dash-net-chart');
     if (!ctx) return;
-    if (this.calChart) this.calChart.destroy();
-    const labels = [], values = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
+    const labels = [], consumed = [], net = [];
+    for (let i = 20; i >= 0; i--) {
+      const d  = new Date(); d.setDate(d.getDate() - i);
       const ds = d.toISOString().split('T')[0];
-      labels.push(d.toLocaleDateString('en-US',{weekday:'short'}));
-      values.push(cals.find(l => l.date === ds)?.calories_consumed ?? 0);
+      const c  = cals.find(l => l.date === ds)?.calories_consumed ?? null;
+      const b  = wkouts.find(s => s.date === ds && s.completed)?.calories_burned ?? 0;
+      if (c !== null) {
+        labels.push(U.fmtShort(ds));
+        consumed.push(c);
+        net.push(c - b);
+      }
     }
-    const t = CONFIG.TARGET_KCAL;
-    this.calChart = new Chart(ctx, {
+    if (labels.length < 2) return;
+    this.charts.net = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: 'Consumed', data: consumed,
+          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,0.08)',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#F5C518',
+          tension: 0.3, fill: true },
+        { label: 'Net', data: net,
+          borderColor: '#2979FF', backgroundColor: 'rgba(41,121,255,0.06)',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#2979FF',
+          tension: 0.3, fill: true, borderDash: [4,3] },
+      ]},
+      options: {
+        responsive: true, animation: { duration: 600 },
+        plugins: {
+          legend: { display: true, position: 'top',
+            labels: { color:'#888', font:{size:11}, boxWidth:10, padding:12 } },
+          tooltip: { callbacks: { label: (i) => \`\${i.dataset.label}: \${i.raw.toLocaleString()} kcal\` } }
+        },
+        scales: {
+          x: { grid:{display:false}, ticks:{font:{size:10}} },
+          y: { ticks:{callback:v=>v.toLocaleString()} }
+        }
+      }
+    });
+  },
+
+  // Weekly workout frequency (last 8 weeks)
+  _freqChart(wkouts) {
+    const ctx = document.getElementById('dash-freq-chart');
+    if (!ctx) return;
+    const labels = [], vals = [];
+    for (let w = 7; w >= 0; w--) {
+      const start = new Date(); start.setDate(start.getDate() - start.getDay() - w * 7);
+      const end   = new Date(start); end.setDate(start.getDate() + 6);
+      const ws = start.toISOString().split('T')[0];
+      const we = end.toISOString().split('T')[0];
+      const count = wkouts.filter(s => s.completed && s.date >= ws && s.date <= we).length;
+      labels.push(\`W\${8 - w}\`);
+      vals.push(count);
+    }
+    this.charts.freq = new Chart(ctx, {
       type: 'bar',
-      data: { labels, datasets: [{ data: values,
-        backgroundColor: values.map(v => v === 0 ? 'rgba(255,255,255,0.04)'
-          : Math.abs(v-t) < 200 ? 'rgba(245,197,24,0.75)' : 'rgba(255,59,48,0.65)'),
-        borderRadius: 5 }]},
-      options: { responsive:true, scales: { x:{grid:{display:false}}, y:{min:0} } }
+      data: { labels, datasets: [
+        { data: vals,
+          backgroundColor: vals.map(v => v >= 4
+            ? 'rgba(0,200,83,0.85)' : v >= 2
+              ? 'rgba(245,197,24,0.75)' : v === 0
+                ? 'rgba(255,255,255,0.05)' : 'rgba(255,149,0,0.65)'),
+          borderRadius: 6, borderSkipped: 'bottom' },
+        { data: Array(8).fill(4), type: 'line',
+          borderColor: 'rgba(0,200,83,0.4)', borderDash: [4,3],
+          borderWidth: 1.5, pointRadius: 0, fill: false },
+      ]},
+      options: {
+        responsive: true, animation: { duration: 600 },
+        plugins: { tooltip: { callbacks: {
+          label: (i) => i.datasetIndex === 0
+            ? \`\${i.raw} session\${i.raw !== 1 ? 's' : ''}\` : 'Goal: 4'
+        }}},
+        scales: {
+          x: { grid:{display:false} },
+          y: { min: 0, max: 6, ticks:{stepSize:1,callback:v=>v} }
+        }
+      }
+    });
+  },
+
+  // Weight trend line chart
+  _wgtChart(data) {
+    const ctx = document.getElementById('dash-wgt-chart');
+    if (!ctx) return;
+    this.charts.wgt = new Chart(ctx, {
+      type: 'line',
+      data: { labels: data.map(w => U.fmtShort(w.date)),
+        datasets: [{ data: data.map(w => +w.weight_kg),
+          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,0.08)',
+          borderWidth: 2.5, pointBackgroundColor: '#F5C518',
+          pointBorderColor: '#080808', pointBorderWidth: 2,
+          pointRadius: 5, tension: 0.3, fill: true }]},
+      options: {
+        responsive: true, animation: { duration: 600 },
+        scales: {
+          x: { grid:{display:false} },
+          y: { ticks:{callback:v=>v+' kg'} }
+        }
+      }
     });
   },
 };
@@ -687,7 +895,7 @@ const WorkoutTab = {
 
     const nw = WORKOUTS[seqIdx];
 
-    el.innerHTML = `
+    el.innerHTML = \`
       <div class="view-toggle-row">
         <button class="vt-btn vt-active">💪 Active Session</button>
         <button class="vt-btn" onclick="PlanView.show()">📋 Browse Plan</button>
@@ -696,18 +904,18 @@ const WorkoutTab = {
       <div class="section-header" style="margin-top:0">Workout Tracker</div>
 
       <div class="sequence-pills">
-        ${WORKOUTS.map((w,i) => `
-          <div class="seq-pill ${i===seqIdx?'seq-active':''}"
-            style="background:${w.bg};color:${w.color};border:1px solid ${w.border}">
-            ${i===seqIdx?'▶ ':''}${w.label}
-          </div>`).join('')}
+        \${WORKOUTS.map((w,i) => \`
+          <div class="seq-pill \${i===seqIdx?'seq-active':''}"
+            style="background:\${w.bg};color:\${w.color};border:1px solid \${w.border}">
+            \${i===seqIdx?'▶ ':''}\${w.label}
+          </div>\`).join('')}
       </div>
       <p class="seq-hint">Fixed sequence — advances automatically after each completed session</p>
 
-      ${this.session
+      \${this.session
         ? this._renderSession(seqIdx)
         : this._renderStart(nw, today, seqIdx)}
-    `;
+    \`;
 
     document.getElementById('workout-date-input')?.addEventListener('change', e => {
       const lbl = document.getElementById('workout-date-label');
@@ -716,34 +924,34 @@ const WorkoutTab = {
   },
 
   _renderStart(w, today, seqIdx) {
-    return `
-      <div class="workout-start-card" style="border-top:2px solid ${w.color}">
+    return \`
+      <div class="workout-start-card" style="border-top:2px solid \${w.color}">
         <div class="ws-header">
           <div>
-            <div class="ws-label" style="color:${w.color}">${w.label}</div>
-            <div class="ws-focus">${w.focus}</div>
+            <div class="ws-label" style="color:\${w.color}">\${w.label}</div>
+            <div class="ws-focus">\${w.focus}</div>
           </div>
-          <div class="ws-burn">🔥 ~${w.kcal} kcal</div>
+          <div class="ws-burn">🔥 ~\${w.kcal} kcal</div>
         </div>
         <div class="ws-exercises">
-          ${w.exercises.map(ex => `
+          \${w.exercises.map(ex => \`
             <div class="ws-ex-row">
-              <span class="ws-ex-muscle">${ex.muscle}</span>
-              <span class="ws-ex-name">${ex.name}</span>
-              <span class="ws-ex-sets">${ex.sets}×${ex.reps}</span>
-            </div>`).join('')}
+              <span class="ws-ex-muscle">\${ex.muscle}</span>
+              <span class="ws-ex-name">\${ex.name}</span>
+              <span class="ws-ex-sets">\${ex.sets}×\${ex.reps}</span>
+            </div>\`).join('')}
         </div>
         <div class="ws-date-section">
           <span class="ws-date-label">Training Date</span>
           <div class="ws-date-row">
-            <span id="workout-date-label">${U.fmt(today)}</span>
-            <input type="date" id="workout-date-input" class="date-input" value="${today}" max="${today}">
+            <span id="workout-date-label">\${U.fmt(today)}</span>
+            <input type="date" id="workout-date-input" class="date-input" value="\${today}" max="\${today}">
           </div>
         </div>
-        <button class="btn-primary btn-full" onclick="WorkoutTab.startSession(${seqIdx})">
-          Start ${w.label} Training Session 💪
+        <button class="btn-primary btn-full" onclick="WorkoutTab.startSession(\${seqIdx})">
+          Start \${w.label} Training Session 💪
         </button>
-      </div>`;
+      </div>\`;
   },
 
   _renderSession(seqIdx) {
@@ -756,73 +964,73 @@ const WorkoutTab = {
     const doneSets  = ed.reduce((a, ex) => a + (ex.sets_done?.filter(Boolean).length ?? 0), 0);
     const pct       = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
 
-    return `
+    return \`
       <div class="session-header">
         <div>
-          <div class="session-badge" style="background:${w.bg};color:${w.color};border:1px solid ${w.border}">${w.label}</div>
-          <div class="session-date">${U.fmt(s.date)}</div>
+          <div class="session-badge" style="background:\${w.bg};color:\${w.color};border:1px solid \${w.border}">\${w.label}</div>
+          <div class="session-date">\${U.fmt(s.date)}</div>
         </div>
         <div class="session-prog-ring">
-          <div class="prog-num">${pct}%</div>
+          <div class="prog-num">\${pct}%</div>
           <div class="prog-sub">DONE</div>
         </div>
       </div>
-      <div class="session-prog-bar"><div class="session-prog-fill" id="sess-prog" style="width:${pct}%"></div></div>
+      <div class="session-prog-bar"><div class="session-prog-fill" id="sess-prog" style="width:\${pct}%"></div></div>
 
       <div class="exercises-list" id="exercises-list">
-        ${w.exercises.map((ex, ei) => {
+        \${w.exercises.map((ex, ei) => {
           const exd  = ed[ei] || { sets_done: Array(ex.sets).fill(false) };
           const done = exd.sets_done?.every(Boolean);
-          return `
-            <div class="exercise-card ${done?'ex-done':''} ${ex.isCardio?'ex-cardio':''}" id="ex-${ei}">
+          return \`
+            <div class="exercise-card \${done?'ex-done':''} \${ex.isCardio?'ex-cardio':''}" id="ex-\${ei}">
               <div class="ex-header">
                 <div class="ex-info">
-                  <div class="ex-name ${done?'ex-name-done':''}">${ex.name}</div>
+                  <div class="ex-name \${done?'ex-name-done':''}">\${ex.name}</div>
                   <div class="ex-meta-row">
-                    <span class="ex-muscle-tag">${ex.muscle}</span>
-                    <span class="ex-sets-info">${ex.sets} × ${ex.reps}</span>
-                    <span class="ex-rest">Rest: ${ex.rest}</span>
+                    <span class="ex-muscle-tag">\${ex.muscle}</span>
+                    <span class="ex-sets-info">\${ex.sets} × \${ex.reps}</span>
+                    <span class="ex-rest">Rest: \${ex.rest}</span>
                   </div>
                 </div>
-                ${ex.yt ? `<a href="${ex.yt}" target="_blank" rel="noopener" class="yt-btn">▶ Tutorial</a>` : ''}
+                \${ex.yt ? \`<a href="\${ex.yt}" target="_blank" rel="noopener" class="yt-btn">▶ Tutorial</a>\` : ''}
               </div>
               <div class="sets-row">
-                ${Array.from({length:ex.sets},(_,si) => {
+                \${Array.from({length:ex.sets},(_,si) => {
                   const sd = exd.sets_done?.[si] ?? false;
-                  return `<button class="set-btn ${sd?'set-done':''}" id="set-${ei}-${si}" onclick="WorkoutTab.toggleSet(${ei},${si})">
-                    <span class="set-num">Set ${si+1}</span>
-                    <span class="set-check">${sd?'✓':'○'}</span>
-                  </button>`;
+                  return \`<button class="set-btn \${sd?'set-done':''}" id="set-\${ei}-\${si}" onclick="WorkoutTab.toggleSet(\${ei},\${si})">
+                    <span class="set-num">Set \${si+1}</span>
+                    <span class="set-check">\${sd?'✓':'○'}</span>
+                  </button>\`;
                 }).join('')}
               </div>
-              ${done ? '<div class="ex-done-badge">✓ Complete</div>' : ''}
-            </div>`;
+              \${done ? '<div class="ex-done-badge">✓ Complete</div>' : ''}
+            </div>\`;
         }).join('')}
       </div>
 
       <div class="session-actions">
         <button class="btn-secondary" onclick="WorkoutTab.abandon()">Abandon</button>
-        <button class="btn-primary ${pct<100?'btn-disabled':''}" id="complete-btn"
-          onclick="WorkoutTab.complete()" ${pct<100?'disabled':''}>
+        <button class="btn-primary \${pct<100?'btn-disabled':''}" id="complete-btn"
+          onclick="WorkoutTab.complete()" \${pct<100?'disabled':''}>
           Complete Workout ✓
         </button>
       </div>
-      <p class="session-hint">Mark all sets to unlock completion</p>`;
+      <p class="session-hint">Mark all sets to unlock completion</p>\`;
   },
 
   _renderDone(s, w) {
-    return `
+    return \`
       <div class="completed-banner">
         <div class="completed-icon">🏆</div>
         <div class="completed-title">Session Complete!</div>
-        <div class="completed-sub">${w.label} · ${U.fmt(s.date)}</div>
+        <div class="completed-sub">\${w.label} · \${U.fmt(s.date)}</div>
         <div class="completed-stats">
-          <div><div class="cs-val text-orange">🔥 ${s.calories_burned}</div><div class="cs-label">kcal burned</div></div>
-          <div><div class="cs-val text-yellow">💪 ${w.exercises.length - 1}</div><div class="cs-label">exercises</div></div>
+          <div><div class="cs-val text-orange">🔥 \${s.calories_burned}</div><div class="cs-label">kcal burned</div></div>
+          <div><div class="cs-val text-yellow">💪 \${w.exercises.length - 1}</div><div class="cs-label">exercises</div></div>
           <div><div class="cs-val text-green">✓ All sets</div><div class="cs-label">completed</div></div>
         </div>
         <button class="btn-primary" onclick="WorkoutTab.newSession()">Log Another Day →</button>
-      </div>`;
+      </div>\`;
   },
 
   startSession(seqIdx) {
@@ -835,7 +1043,7 @@ const WorkoutTab = {
     };
     DB.upsertSession(this.session);
     App.refreshWkout();
-    toast(`Started ${w.label}! Let's go! 💪`, 'success');
+    toast(\`Started \${w.label}! Let's go! 💪\`, 'success');
   },
 
   toggleSet(ei, si) {
@@ -845,7 +1053,7 @@ const WorkoutTab = {
     ed[ei].sets_done[si] = !ed[ei].sets_done[si];
     DB.upsertSession({ ...this.session });
 
-    const btn = document.getElementById(`set-${ei}-${si}`);
+    const btn = document.getElementById(\`set-\${ei}-\${si}\`);
     if (btn) {
       const done = ed[ei].sets_done[si];
       btn.classList.toggle('set-done', done);
@@ -853,7 +1061,7 @@ const WorkoutTab = {
     }
 
     const allDone = ed[ei].sets_done.every(Boolean);
-    const card = document.getElementById(`ex-${ei}`);
+    const card = document.getElementById(\`ex-\${ei}\`);
     if (card) {
       card.classList.toggle('ex-done', allDone);
       card.querySelector('.ex-name')?.classList.toggle('ex-name-done', allDone);
@@ -887,7 +1095,7 @@ const WorkoutTab = {
 
     App.refreshAll();
     const w = WORKOUTS.find(x => x.id === this.session.workout_type);
-    toast(`🏆 ${w.label} complete! +${this.session.calories_burned} kcal burned!`, 'success', 5000);
+    toast(\`🏆 \${w.label} complete! +\${this.session.calories_burned} kcal burned!\`, 'success', 5000);
   },
 
   abandon() {
@@ -918,7 +1126,7 @@ const PlanView = {
     if (!el) return;
     const w = WORKOUTS[this.day];
 
-    el.innerHTML = `
+    el.innerHTML = \`
       <div class="view-toggle-row">
         <button class="vt-btn" onclick="App.refreshWkout()">💪 Active Session</button>
         <button class="vt-btn vt-active">📋 Browse Plan</button>
@@ -927,64 +1135,64 @@ const PlanView = {
       <div class="section-header" style="margin-top:0">Training Plan Reference</div>
 
       <div class="plan-day-tabs">
-        ${WORKOUTS.map((wd,i) => `
-          <button class="plan-day-btn ${i===this.day?'plan-day-active':''}"
-            style="${i===this.day?`background:${wd.bg};color:${wd.color};border-color:${wd.border}`:''}"
-            onclick="PlanView.show(${i})">${wd.label}
-          </button>`).join('')}
+        \${WORKOUTS.map((wd,i) => \`
+          <button class="plan-day-btn \${i===this.day?'plan-day-active':''}"
+            style="\${i===this.day?\`background:\${wd.bg};color:\${wd.color};border-color:\${wd.border}\`:''}"
+            onclick="PlanView.show(\${i})">\${wd.label}
+          </button>\`).join('')}
       </div>
 
-      <div class="plan-day-header" style="border-left:3px solid ${w.color}">
-        <div class="pdh-label" style="color:${w.color}">${w.label}</div>
-        <div class="pdh-focus">${w.focus}</div>
+      <div class="plan-day-header" style="border-left:3px solid \${w.color}">
+        <div class="pdh-label" style="color:\${w.color}">\${w.label}</div>
+        <div class="pdh-focus">\${w.focus}</div>
         <div class="pdh-meta">
-          <span>🔥 ~${w.kcal} kcal</span>
+          <span>🔥 ~\${w.kcal} kcal</span>
           <span>⏱ 55–65 min</span>
-          <span>💪 ${w.exercises.filter(e=>!e.isCardio).length} exercises + cardio</span>
+          <span>💪 \${w.exercises.filter(e=>!e.isCardio).length} exercises + cardio</span>
         </div>
       </div>
 
       <div class="plan-exercises">
-        ${w.exercises.map((ex,ei) => {
+        \${w.exercises.map((ex,ei) => {
           const vid   = U.ytId(ex.yt);
-          const thumb = vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : null;
-          return `
-            <div class="plan-ex-card ${ex.isCardio?'plan-ex-cardio':''}">
-              <div class="plan-ex-left"><div class="plan-ex-num">${ei+1}</div></div>
-              ${thumb ? `
+          const thumb = vid ? \`https://img.youtube.com/vi/\${vid}/mqdefault.jpg\` : null;
+          return \`
+            <div class="plan-ex-card \${ex.isCardio?'plan-ex-cardio':''}">
+              <div class="plan-ex-left"><div class="plan-ex-num">\${ei+1}</div></div>
+              \${thumb ? \`
                 <div class="plan-thumb-wrap">
-                  <img class="plan-thumb" src="${thumb}" alt="${ex.name}" loading="lazy"
+                  <img class="plan-thumb" src="\${thumb}" alt="\${ex.name}" loading="lazy"
                     onerror="this.parentElement.style.display='none'">
-                  <a href="${ex.yt}" target="_blank" rel="noopener" class="thumb-play">
+                  <a href="\${ex.yt}" target="_blank" rel="noopener" class="thumb-play">
                     <span class="thumb-play-icon">▶</span>
                   </a>
-                </div>` : `
+                </div>\` : \`
                 <div class="plan-thumb-wrap plan-thumb-placeholder">
-                  <span>${ex.isCardio?'🏃':'💪'}</span>
-                </div>`}
+                  <span>\${ex.isCardio?'🏃':'💪'}</span>
+                </div>\`}
               <div class="plan-ex-info">
-                <div class="plan-ex-name">${ex.name}</div>
+                <div class="plan-ex-name">\${ex.name}</div>
                 <div class="plan-ex-meta-row">
-                  <span class="ex-muscle-tag">${ex.muscle}</span>
-                  <span class="ex-sets-info">${ex.sets} × ${ex.reps}</span>
-                  <span class="ex-rest">Rest: ${ex.rest}</span>
+                  <span class="ex-muscle-tag">\${ex.muscle}</span>
+                  <span class="ex-sets-info">\${ex.sets} × \${ex.reps}</span>
+                  <span class="ex-rest">Rest: \${ex.rest}</span>
                 </div>
-                ${ex.yt ? `
-                  <a href="${ex.yt}" target="_blank" rel="noopener" class="yt-watch-btn">
+                \${ex.yt ? \`
+                  <a href="\${ex.yt}" target="_blank" rel="noopener" class="yt-watch-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.2 21.6 12 21.6 12 21.6s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7zm-13.5 8.5V8.3l8.2 3.6-8.2 3.6z"/>
                     </svg>
                     Watch Tutorial on YouTube
-                  </a>` : ''}
+                  </a>\` : ''}
               </div>
-            </div>`;
+            </div>\`;
         }).join('')}
       </div>
 
       <div class="plan-note">
         📌 Progressive overload: each week, add 1 rep or 2.5–5 kg per lift. Track your numbers every session.
       </div>
-    `;
+    \`;
   },
 };
 
@@ -1008,27 +1216,27 @@ const CalTab = {
     const circum = 2 * Math.PI * 48;
     const ringVal= circum * (1 - pct / 100);
 
-    el.innerHTML = `
+    el.innerHTML = \`
       <div class="section-header" style="margin-top:0">Today's Calories</div>
       <div class="cal-ring-card">
         <div class="cal-ring-wrap">
           <svg class="cal-ring-svg" viewBox="0 0 120 120">
             <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
             <circle cx="60" cy="60" r="48" fill="none"
-              stroke="${pct>=100?'#FF3B30':'#F5C518'}" stroke-width="10"
-              stroke-dasharray="${circum}" stroke-dashoffset="${ringVal}"
+              stroke="\${pct>=100?'#FF3B30':'#F5C518'}" stroke-width="10"
+              stroke-dasharray="\${circum}" stroke-dashoffset="\${ringVal}"
               stroke-linecap="round" style="transition:stroke-dashoffset 0.7s ease"/>
           </svg>
           <div class="cal-ring-center">
-            <div class="cal-ring-num">${eaten>0?eaten:'—'}</div>
+            <div class="cal-ring-num">\${eaten>0?eaten:'—'}</div>
             <div class="cal-ring-label">kcal eaten</div>
           </div>
         </div>
         <div class="cal-ring-stats">
-          <div><div class="cal-s-val text-yellow">${CONFIG.TARGET_KCAL}</div><div class="cal-s-label">Target</div></div>
-          <div><div class="cal-s-val ${remain>=0?'text-green':'text-red'}">${Math.abs(remain)}</div><div class="cal-s-label">${remain>=0?'Remaining':'Over'}</div></div>
-          <div><div class="cal-s-val text-orange">${burned>0?burned:'—'}</div><div class="cal-s-label">Burned</div></div>
-          <div><div class="cal-s-val">${eaten>0?eaten-burned:'—'}</div><div class="cal-s-label">Net kcal</div></div>
+          <div><div class="cal-s-val text-yellow">\${CONFIG.TARGET_KCAL}</div><div class="cal-s-label">Target</div></div>
+          <div><div class="cal-s-val \${remain>=0?'text-green':'text-red'}">\${Math.abs(remain)}</div><div class="cal-s-label">\${remain>=0?'Remaining':'Over'}</div></div>
+          <div><div class="cal-s-val text-orange">\${burned>0?burned:'—'}</div><div class="cal-s-label">Burned</div></div>
+          <div><div class="cal-s-val">\${eaten>0?eaten-burned:'—'}</div><div class="cal-s-label">Net kcal</div></div>
         </div>
       </div>
 
@@ -1037,46 +1245,46 @@ const CalTab = {
         <p class="log-hint">Roughly how many calories did you eat today?</p>
         <div class="log-row">
           <input type="number" id="cal-input" class="big-input"
-            placeholder="${tLog?tLog.calories_consumed:1750}"
-            value="${tLog?tLog.calories_consumed:''}" min="0" max="10000">
+            placeholder="\${tLog?tLog.calories_consumed:1750}"
+            value="\${tLog?tLog.calories_consumed:''}" min="0" max="10000">
           <span class="input-unit">kcal</span>
         </div>
         <input type="text" id="cal-notes" class="form-input"
           placeholder="Optional note (e.g. cheat day)..."
-          value="${tLog?.notes||''}" style="margin-bottom:10px">
+          value="\${tLog?.notes||''}" style="margin-bottom:10px">
         <button class="btn-primary btn-full" onclick="CalTab.save()">
-          ${tLog?'✏️ Update Today\'s Log':'💾 Save Calories'}
+          \${tLog?'✏️ Update Today\\'s Log':'💾 Save Calories'}
         </button>
         <div class="presets">
           <div class="preset-label">Quick entry</div>
           <div class="preset-btns">
-            ${[1400,1600,1750,1900,2100,2300].map(v => `
-              <button class="preset-btn ${tLog?.calories_consumed===v?'preset-active':''}"
-                onclick="document.getElementById('cal-input').value=${v};
+            \${[1400,1600,1750,1900,2100,2300].map(v => \`
+              <button class="preset-btn \${tLog?.calories_consumed===v?'preset-active':''}"
+                onclick="document.getElementById('cal-input').value=\${v};
                          document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('preset-active'));
-                         this.classList.add('preset-active')">${v}</button>`).join('')}
+                         this.classList.add('preset-active')">\${v}</button>\`).join('')}
           </div>
         </div>
       </div>
 
-      ${cals.length>=2 ? `
+      \${cals.length>=2 ? \`
       <div class="section-header">14-Day History</div>
-      <div class="chart-card"><canvas id="cal-hist-chart" height="130"></canvas></div>` : ''}
+      <div class="chart-card"><canvas id="cal-hist-chart" height="130"></canvas></div>\` : ''}
 
       <div class="section-header">Log History</div>
       <div class="history-list">
-        ${cals.length===0 ? '<p class="empty-state">No logs yet. Start tracking!</p>'
+        \${cals.length===0 ? '<p class="empty-state">No logs yet. Start tracking!</p>'
           : cals.slice(0,20).map(l => {
               const wk = wkouts.find(s => s.date===l.date&&s.completed);
               const ok = Math.abs(l.calories_consumed - CONFIG.TARGET_KCAL) <= 200;
-              return `<div class="history-item">
-                <div class="history-date">${U.fmt(l.date)}</div>
-                <div class="history-cals ${ok?'text-yellow':'text-red'}">${l.calories_consumed} kcal</div>
-                ${wk?`<div class="history-wkout">💪 −${wk.calories_burned}</div>`:''}
-              </div>`;
+              return \`<div class="history-item">
+                <div class="history-date">\${U.fmt(l.date)}</div>
+                <div class="history-cals \${ok?'text-yellow':'text-red'}">\${l.calories_consumed} kcal</div>
+                \${wk?\`<div class="history-wkout">💪 −\${wk.calories_burned}</div>\` : ''}
+              </div>\`;
             }).join('')}
       </div>
-    `;
+    \`;
     if (cals.length >= 2) this._chart(cals);
   },
 
@@ -1086,7 +1294,7 @@ const CalTab = {
     if (!v || v < 1 || v > 10000) { toast('Enter a valid amount (1–10000 kcal)', 'error'); return; }
     DB.upsertCalorieLog(U.today(), v, n);
     App.refreshAll();
-    toast(`✅ Logged ${v} kcal for today!`, 'success');
+    toast(\`✅ Logged \${v} kcal for today!\`, 'success');
   },
 
   _chart(cals) {
@@ -1124,7 +1332,7 @@ const CalendarTab = {
     const totalWk     = wkouts.filter(s=>s.completed).length;
     const totalBurned = wkouts.filter(s=>s.completed).reduce((a,s)=>a+(s.calories_burned||0),0);
 
-    el.innerHTML = `
+    el.innerHTML = \`
       <div class="section-header" style="margin-top:0">Training Calendar</div>
       <div class="cal-legend">
         <span class="legend-item"><span class="legend-dot" style="background:#F5C518"></span>Trained + Logged</span>
@@ -1138,18 +1346,18 @@ const CalendarTab = {
           <button class="cal-nav-btn" onclick="CalendarTab.next()">›</button>
         </div>
         <div class="cal-grid-header">
-          ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<span>${d}</span>`).join('')}
+          \${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>\`<span>\${d}</span>\`).join('')}
         </div>
         <div class="cal-grid" id="cal-grid"></div>
       </div>
       <div class="section-header">All-Time Stats</div>
       <div class="stats-grid">
-        <div class="stat-card stat-blue"><div class="stat-icon">💪</div><div class="stat-val">${totalWk}</div><div class="stat-label">Total Sessions</div></div>
-        <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val">${cals.length}</div><div class="stat-label">Days Logged</div></div>
-        <div class="stat-card stat-yellow"><div class="stat-icon">⚡</div><div class="stat-val">${totalBurned.toLocaleString()}</div><div class="stat-label">kcal Burned Total</div></div>
-        <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-val">${DB.getWeightLogs().length}</div><div class="stat-label">Weight Entries</div></div>
+        <div class="stat-card stat-blue"><div class="stat-icon">💪</div><div class="stat-val">\${totalWk}</div><div class="stat-label">Total Sessions</div></div>
+        <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val">\${cals.length}</div><div class="stat-label">Days Logged</div></div>
+        <div class="stat-card stat-yellow"><div class="stat-icon">⚡</div><div class="stat-val">\${totalBurned.toLocaleString()}</div><div class="stat-label">kcal Burned Total</div></div>
+        <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-val">\${DB.getWeightLogs().length}</div><div class="stat-label">Weight Entries</div></div>
       </div>
-    `;
+    \`;
     this._renderMonth(cals, wkouts);
   },
 
@@ -1158,25 +1366,25 @@ const CalendarTab = {
     const lbl  = document.getElementById('cal-month-lbl');
     const grid = document.getElementById('cal-grid');
     if (!lbl || !grid) return;
-    lbl.textContent = `${MONTHS[this.month]} ${this.year}`;
+    lbl.textContent = \`\${MONTHS[this.month]} \${this.year}\`;
     const first = new Date(this.year, this.month, 1).getDay();
     const days  = new Date(this.year, this.month+1, 0).getDate();
     const today = U.today();
     let html = '<div></div>'.repeat(first);
     const emap = { upper_a:'💪', lower_a:'🦵', upper_b:'🏋️', lower_b:'🔥' };
     for (let d=1; d<=days; d++) {
-      const ds = `${this.year}-${String(this.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const ds = \`\${this.year}-\${String(this.month+1).padStart(2,'0')}-\${String(d).padStart(2,'0')}\`;
       const isToday  = ds === today;
       const isFuture = ds > today;
       const hasWk    = wkouts.some(s=>s.date===ds&&s.completed);
       const hasCal   = cals.some(l=>l.date===ds);
       const wk       = wkouts.find(s=>s.date===ds&&s.completed);
       const dot      = (hasWk&&hasCal)?'dot-full':hasWk?'dot-wkout':hasCal?'dot-cal':'';
-      html += `<div class="cal-day ${isToday?'cal-today':''} ${isFuture?'cal-future':''}">
-        <span class="cal-day-num">${d}</span>
-        ${dot?`<span class="cal-dot ${dot}"></span>`:''}
-        ${wk?`<span class="cal-wk-badge">${emap[wk.workout_type]||'💪'}</span>`:''}
-      </div>`;
+      html += \`<div class="cal-day \${isToday?'cal-today':''} \${isFuture?'cal-future':''}">
+        <span class="cal-day-num">\${d}</span>
+        \${dot?\`<span class="cal-dot \${dot}"></span>\` : ''}
+        \${wk?\`<span class="cal-wk-badge">\${emap[wk.workout_type]||'💪'}</span>\` : ''}
+      </div>\`;
     }
     grid.innerHTML = html;
   },
@@ -1198,17 +1406,17 @@ const WeightTab = {
     const oldest = weights[weights.length-1];
     const change = weights.length >= 2 ? (latest.weight_kg - oldest.weight_kg).toFixed(1) : null;
 
-    el.innerHTML = `
+    el.innerHTML = \`
       <div class="section-header" style="margin-top:0">Weight Tracker</div>
       <div class="weight-hero-card" style="margin-bottom:4px">
         <div class="weight-current">
-          <div class="weight-val">${latest?latest.weight_kg:CONFIG.START_WEIGHT}</div>
+          <div class="weight-val">\${latest?latest.weight_kg:CONFIG.START_WEIGHT}</div>
           <div class="weight-unit">kg</div>
         </div>
         <div class="weight-meta">
-          <div><div class="wm-label">Starting</div><div class="wm-val">${oldest?oldest.weight_kg+' kg':CONFIG.START_WEIGHT+' kg'}</div></div>
-          <div><div class="wm-label">Total change</div><div class="wm-val ${change<0?'text-green':+change>0?'text-red':''}">${change!==null?(+change>0?'+':'')+change+' kg':'—'}</div></div>
-          <div><div class="wm-label">Last logged</div><div class="wm-val">${latest?U.fmt(latest.date,{month:'short',day:'numeric'}):'Never'}</div></div>
+          <div><div class="wm-label">Starting</div><div class="wm-val">\${oldest?oldest.weight_kg+' kg':CONFIG.START_WEIGHT+' kg'}</div></div>
+          <div><div class="wm-label">Total change</div><div class="wm-val \${change<0?'text-green':+change>0?'text-red':''}">\${change!==null?(+change>0?'+':'')+change+' kg':'—'}</div></div>
+          <div><div class="wm-label">Last logged</div><div class="wm-val">\${latest?U.fmt(latest.date,{month:'short',day:'numeric'}):'Never'}</div></div>
         </div>
       </div>
 
@@ -1217,33 +1425,33 @@ const WeightTab = {
         <p class="log-hint">Weigh yourself weekly, same time each week (morning, before food).</p>
         <div class="log-row">
           <input type="number" id="wgt-input" class="big-input"
-            placeholder="${latest?latest.weight_kg:CONFIG.START_WEIGHT}" step="0.1" min="30" max="250">
+            placeholder="\${latest?latest.weight_kg:CONFIG.START_WEIGHT}" step="0.1" min="30" max="250">
           <span class="input-unit">kg</span>
         </div>
-        <input type="date" id="wgt-date" class="form-input" value="${U.today()}" max="${U.today()}" style="margin-bottom:10px">
+        <input type="date" id="wgt-date" class="form-input" value="\${U.today()}" max="\${U.today()}" style="margin-bottom:10px">
         <input type="text" id="wgt-notes" class="form-input" placeholder="Optional notes...">
         <button class="btn-primary btn-full" onclick="WeightTab.save()" style="margin-top:12px">💾 Save Weight Entry</button>
       </div>
 
-      ${weights.length>=2 ? `
+      \${weights.length>=2 ? \`
       <div class="section-header">Weight Trend</div>
-      <div class="chart-card"><canvas id="wgt-chart" height="150"></canvas></div>`
+      <div class="chart-card"><canvas id="wgt-chart" height="150"></canvas></div>\`
       : '<p class="empty-state" style="margin-top:16px">Log at least 2 entries to see your trend.</p>'}
 
       <div class="section-header">History</div>
       <div class="history-list">
-        ${weights.length===0 ? '<p class="empty-state">No entries yet.</p>'
+        \${weights.length===0 ? '<p class="empty-state">No entries yet.</p>'
           : weights.map((w,i) => {
               const prev = weights[i+1];
               const diff = prev ? (w.weight_kg - prev.weight_kg).toFixed(1) : null;
-              return `<div class="history-item">
-                <div class="history-date">${U.fmt(w.date)}</div>
-                <div class="history-kg">${w.weight_kg} kg</div>
-                ${diff!==null ? `<div class="history-diff ${diff<0?'text-green':+diff>0?'text-red':'text-muted'}">${+diff>0?'+':''}${diff} kg</div>` : '<div class="history-diff text-muted">—</div>'}
-              </div>`;
+              return \`<div class="history-item">
+                <div class="history-date">\${U.fmt(w.date)}</div>
+                <div class="history-kg">\${w.weight_kg} kg</div>
+                \${diff!==null ? \`<div class="history-diff \${diff<0?'text-green':+diff>0?'text-red':'text-muted'}">\${+diff>0?'+':''}\${diff} kg</div>\` : '<div class="history-diff text-muted">—</div>'}
+              </div>\`;
             }).join('')}
       </div>
-    `;
+    \`;
     if (weights.length >= 2) this._chart(weights.slice().reverse());
   },
 
@@ -1254,7 +1462,7 @@ const WeightTab = {
     if (!v || v < 30 || v > 250) { toast('Enter a valid weight (30–250 kg)', 'error'); return; }
     DB.insertWeight(d, v, n);
     App.refreshAll();
-    toast(`✅ Weight logged: ${v} kg`, 'success');
+    toast(\`✅ Weight logged: \${v} kg\`, 'success');
   },
 
   _chart(data) {
@@ -1342,8 +1550,8 @@ const App = {
     Notifications.closePanel();
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-    document.getElementById(`tab-${name}`)?.classList.add('active');
-    document.getElementById(`nav-${name}`)?.classList.add('active');
+    document.getElementById(\`tab-\${name}\`)?.classList.add('active');
+    document.getElementById(\`nav-\${name}\`)?.classList.add('active');
     this.tab = name;
     this._renderTab();
   },
