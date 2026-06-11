@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omar's Full Fitness Plan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5a5a56;
+    --text3: #888880;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --green: #0F6E56;
+    --green-bg: #E1F5EE;
+    --green-text: #085041;
+    --amber: #BA7517;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --red: #A32D2D;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #242420;
+      --surface2: #2c2c28;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.18);
+      --text: #e8e6de;
+      --text2: #a8a69e;
+      --text3: #6a6860;
+      --blue-bg: #0C2A4A;
+      --blue-text: #85B7EB;
+      --green-bg: #042C20;
+      --green-text: #5DCAA5;
+      --amber-bg: #3A2000;
+      --amber-text: #FAC775;
+      --red-bg: #2A0A0A;
+      --red-text: #F09595;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 20px 24px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
+  .header p { font-size: 13px; color: var(--text2); }
+  .header-meta { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 999px; }
+  .pill-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .pill-green { background: var(--green-bg); color: var(--green-text); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber-text); }
+
+  /* NAV TABS */
+  .tab-nav { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 24px; display: flex; gap: 0; overflow-x: auto; }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* LAYOUT */
+  .main { max-width: 860px; margin: 0 auto; padding: 24px 20px 60px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION HEADING */
+  .sec-head { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin: 24px 0 10px; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 10px; }
+  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .card-body { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+  /* METRICS GRID */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; margin-bottom: 20px; }
+  .metric { background: var(--surface2); border-radius: var(--radius); padding: 14px 16px; }
+  .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-val { font-size: 24px; font-weight: 600; color: var(--text); }
+  .metric-unit { font-size: 13px; font-weight: 400; color: var(--text2); }
+
+  /* SCHEDULE GRID */
+  .schedule { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 10px; }
+  .sched-day { text-align: center; border-radius: var(--radius); padding: 10px 4px; font-size: 12px; }
+  .sched-day.gym { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
+  .sched-day.rest { background: var(--surface2); color: var(--text3); }
+  .sched-day .label { font-size: 11px; font-weight: 700; display: block; }
+  .sched-day .sub { font-size: 10px; margin-top: 2px; display: block; line-height: 1.3; }
+
+  /* INFO BOX */
+  .info-box { background: var(--blue-bg); border-left: 3px solid var(--blue); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin-bottom: 10px; font-size: 13px; color: var(--blue-text); line-height: 1.6; }
+  .success-box { background: var(--green-bg); border-left: 3px solid var(--green); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin-bottom: 10px; font-size: 13px; color: var(--green-text); line-height: 1.6; }
+
+  /* MACRO BAR */
+  .macro-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 14px; }
+  .macro-cell .macro-label { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
+  .macro-cell .macro-val { font-size: 22px; font-weight: 600; }
+  .macro-cell .macro-kcal { font-size: 11px; color: var(--text3); }
+  .bar-wrap { height: 10px; border-radius: 99px; overflow: hidden; display: flex; margin: 10px 0 6px; }
+  .bar-seg { height: 100%; }
+  .bar-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text2); }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+  /* DAY TABS */
+  .day-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .day-btn { border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 7px 14px; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text2); transition: all 0.15s; }
+  .day-btn.active { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue); }
+  .day-btn:hover:not(.active) { background: var(--surface2); }
+
+  /* EXERCISE TABLE */
+  .ex-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 11px; font-weight: 600; color: var(--text3); text-align: left; padding: 8px 10px; border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 11px 10px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .ex-name { font-weight: 600; font-size: 13px; }
+  .yt-link { display: inline-block; font-size: 11px; color: var(--blue); text-decoration: none; margin-top: 3px; }
+  .yt-link:hover { text-decoration: underline; }
+  .cardio-row td { background: var(--amber-bg); }
+  .cardio-name { font-weight: 600; font-size: 13px; color: var(--amber-text); }
+  .cardio-note { font-size: 11px; color: var(--amber); margin-top: 3px; }
+
+  /* FOOD GRID */
+  .food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .food-grid { grid-template-columns: 1fr; } }
+  .food-head { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .food-item { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 6px 0; border-bottom: 0.5px solid var(--border); }
+  .food-item:last-child { border-bottom: none; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: #1D9E75; }
+  .dot-red { background: #E24B4A; }
+
+  /* RULES */
+  .rule { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .rule-num { background: var(--blue-bg); color: var(--blue-text); font-size: 13px; font-weight: 700; border-radius: 999px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .rule-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .rule-text strong { color: var(--text); font-weight: 600; }
+
+  /* APP CARDS */
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 10px; margin-bottom: 20px; }
+  .app-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .app-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-bottom: 8px; display: inline-block; }
+  .app-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .app-desc { font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 8px; }
+  .app-link { font-size: 12px; color: var(--blue); text-decoration: none; }
+  .app-link:hover { text-decoration: underline; }
+
+  /* LINK ROWS */
+  .link-row { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .link-row-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .link-row-sub { font-size: 12px; color: var(--text2); }
+
+  /* PRINT */
+  @media print {
+    .tab-nav, .day-bar { display: none; }
+    .panel { display: block !important; }
+    .day-panel { display: block !important; page-break-inside: avoid; }
+    body { font-size: 12px; }
+    .header { position: static; }
+  }
+
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Omar's Full Fitness Plan</h1>
+  <p>Goal: body recomposition — lose fat, build upper muscle, boost stamina &amp; endurance</p>
+  <div class="header-meta">
+    <span class="pill pill-blue">20 yrs · 178 cm · 75 kg</span>
+    <span class="pill pill-green">4 days/week gym</span>
+    <span class="pill pill-amber">Body recomposition strategy</span>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+  <button class="tab-btn" onclick="switchTab('calories')">🔥 Calories &amp; Macros</button>
+  <button class="tab-btn" onclick="switchTab('training')">💪 Training Plan</button>
+  <button class="tab-btn" onclick="switchTab('food')">🥗 Food Guide</button>
+  <button class="tab-btn" onclick="switchTab('apps')">📱 Apps &amp; Tools</button>
+</div>
+
+<div class="main">
+
+  <!-- ===== OVERVIEW ===== -->
+  <div id="tab-overview" class="panel active">
+
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.7;">
+      You are <strong>skinny fat</strong> — normal BMI but low muscle mass and higher body fat. The best strategy is <strong>body recomposition</strong>: a small calorie deficit + progressive resistance training. As a beginner, your body can gain muscle and lose fat simultaneously better than almost anyone. Use this advantage.
+    </p>
+
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Maintenance (TDEE)</div><div class="metric-val">2050 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Target intake</div><div class="metric-val">1750 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Daily deficit</div><div class="metric-val">−300 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Protein target</div><div class="metric-val">150 <span class="metric-unit">g/day</span></div></div>
+      <div class="metric"><div class="metric-label">Gym days</div><div class="metric-val">4 <span class="metric-unit">days/wk</span></div></div>
+      <div class="metric"><div class="metric-label">Est. fat loss</div><div class="metric-val">~0.3 <span class="metric-unit">kg/wk</span></div></div>
+    </div>
+
+    <div class="sec-head">The plan in one sentence</div>
+    <div class="info-box">
+      Eat 1750 kcal/day with high protein → lift heavy 4× a week using an upper/lower split → add 15–20 min cardio at the END of each session. Repeat for 12 weeks, then reassess.
+    </div>
+
+    <div class="sec-head">Weekly schedule</div>
+    <div class="schedule">
+      <div class="sched-day gym"><span class="label">Mon</span><span class="sub">Upper A</span></div>
+      <div class="sched-day rest"><span class="label">Tue</span><span class="sub">Rest / walk</span></div>
+      <div class="sched-day gym"><span class="label">Wed</span><span class="sub">Lower A</span></div>
+      <div class="sched-day rest"><span class="label">Thu</span><span class="sub">Rest / walk</span></div>
+      <div class="sched-day gym"><span class="label">Fri</span><span class="sub">Upper B</span></div>
+      <div class="sched-day gym"><span class="label">Sat</span><span class="sub">Lower B</span></div>
+      <div class="sched-day rest"><span class="label">Sun</span><span class="sub">Full rest</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:6px;">Rest days: light 20–30 min walk is fine and helps recovery. No intense cardio on rest days.</p>
+
+    <div class="sec-head">Key principles</div>
+    <div class="card">
+      <div class="card-title">Progressive overload — the golden rule</div>
+      <div class="card-body" style="margin-top:4px;">Every week, try to add either one more rep or a small amount of extra weight (2.5–5 kg) to each lift. This is how muscles grow. Track your numbers every session — if you're not progressing, you're not growing.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cardio always goes at the END</div>
+      <div class="card-body" style="margin-top:4px;">Cardio before lifting depletes glycogen and reduces your strength output. Do all your lifting first, then finish with 15–20 min of cardio. This order maximizes both muscle growth and fat burning.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sleep 7–8 hours — non-negotiable</div>
+      <div class="card-body" style="margin-top:4px;">Muscles grow during recovery, not during the workout. Poor sleep elevates cortisol (a fat-storing, muscle-destroying hormone) and tanks gym performance. No supplement replaces sleep.</div>
+    </div>
+
+  </div>
+
+  <!-- ===== CALORIES ===== -->
+  <div id="tab-calories" class="panel">
+
+    <div class="sec-head">Your calorie targets</div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Maintenance (TDEE)</div><div class="metric-val">2050 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Your daily target</div><div class="metric-val">1750 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Weekly deficit</div><div class="metric-val">2100 <span class="metric-unit">kcal</span></div></div>
+      <div class="metric"><div class="metric-label">Est. fat loss/week</div><div class="metric-val">~0.3 <span class="metric-unit">kg</span></div></div>
+    </div>
+
+    <div class="info-box">
+      A –300 kcal deficit is "mild" on purpose. You want to lose fat slowly while keeping energy high for lifting and muscle growth. Aggressive cutting (–500 or more) kills muscle gains and gym performance, especially for beginners.
+    </div>
+
+    <div class="sec-head">Daily macro targets (at 1750 kcal)</div>
+    <div class="card">
+      <div class="macro-row">
+        <div class="macro-cell">
+          <div class="macro-label">Protein</div>
+          <div class="macro-val" style="color:#0F6E56;">150g</div>
+          <div class="macro-kcal">600 kcal · 34%</div>
+        </div>
+        <div class="macro-cell">
+          <div class="macro-label">Carbohydrates</div>
+          <div class="macro-val" style="color:#185FA5;">160g</div>
+          <div class="macro-kcal">640 kcal · 37%</div>
+        </div>
+        <div class="macro-cell">
+          <div class="macro-label">Fats</div>
+          <div class="macro-val" style="color:#BA7517;">57g</div>
+          <div class="macro-kcal">510 kcal · 29%</div>
+        </div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-seg" style="width:34%;background:#1D9E75;"></div>
+        <div class="bar-seg" style="width:37%;background:#378ADD;"></div>
+        <div class="bar-seg" style="width:29%;background:#EF9F27;"></div>
+      </div>
+      <div class="bar-legend">
+        <span><span class="leg-dot" style="background:#1D9E75;"></span>Protein (34%)</span>
+        <span><span class="leg-dot" style="background:#378ADD;"></span>Carbs (37%)</span>
+        <span><span class="leg-dot" style="background:#EF9F27;"></span>Fats (29%)</span>
+      </div>
+    </div>
+
+    <div class="sec-head">Why protein is your #1 priority</div>
+    <div class="card-body" style="font-size:13px;line-height:1.7;margin-bottom:20px;">
+      At 75 kg, you need <strong>~2g protein per kg = 150g daily</strong>. This is the single most important number. Protein preserves and builds muscle while you're in a calorie deficit. Without enough protein you'll lose weight, but it'll be muscle, not fat — leaving you weaker and still soft. Spread your protein across <strong>3–4 meals</strong> (35–40g each) for best absorption.
+    </div>
+
+    <div class="sec-head">Sample protein sources to hit 150g/day</div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;font-size:13px;">
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>Chicken breast (200g)</strong><br><span style="color:var(--text2);">≈ 46g protein</span></div>
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>2 whole eggs + 3 whites</strong><br><span style="color:var(--text2);">≈ 24g protein</span></div>
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>Canned tuna (185g)</strong><br><span style="color:var(--text2);">≈ 40g protein</span></div>
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>Greek yogurt (200g)</strong><br><span style="color:var(--text2);">≈ 20g protein</span></div>
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>Lentils cooked (200g)</strong><br><span style="color:var(--text2);">≈ 18g protein</span></div>
+        <div style="padding:8px;background:var(--surface2);border-radius:8px;"><strong>Whey protein shake</strong><br><span style="color:var(--text2);">≈ 25g protein</span></div>
+      </div>
+    </div>
+
+    <div class="sec-head">TDEE calculators — verify your numbers</div>
+    <div class="link-row">
+      <div><div class="link-row-name">TDEE Calculator</div><div class="link-row-sub">Most accurate — shows all activity levels + macro split</div></div>
+      <a href="https://tdeecalculator.net" target="_blank" class="pill pill-blue">tdeecalculator.net ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">Calculator.net Calorie Calculator</div><div class="link-row-sub">Clean, detailed — BMR + TDEE with activity multiplier</div></div>
+      <a href="https://www.calculator.net/calorie-calculator.html" target="_blank" class="pill pill-blue">calculator.net ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">IIFYM Macro Calculator</div><div class="link-row-sub">"If It Fits Your Macros" — exact macro targets for your goal</div></div>
+      <a href="https://www.iifym.com/iifym-calculator/" target="_blank" class="pill pill-blue">iifym.com ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">Healthy Eater Macro Calculator</div><div class="link-row-sub">Simple, beginner-friendly interface</div></div>
+      <a href="https://healthyeater.com/flexible-dieting-calculator" target="_blank" class="pill pill-blue">healthyeater.com ↗</a>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:10px;">For activity level in these calculators: select "lightly active" now. After 4 consistent weeks of training, bump it to "moderately active".</p>
+
+  </div>
+
+  <!-- ===== TRAINING ===== -->
+  <div id="tab-training" class="panel">
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Program: 4-Day Upper / Lower Split (Hypertrophy + Strength)</div>
+      <div class="card-body" style="margin-top:4px;">The most evidence-backed beginner program for body recomposition. You hit every major muscle group twice per week — optimal for muscle growth. All machines used are standard and found in virtually every gym. Cardio goes at the END of every session, never the start.</div>
+    </div>
+
+    <div class="day-bar">
+      <button class="day-btn active" onclick="switchDay('mon', this)">Mon — Upper A</button>
+      <button class="day-btn" onclick="switchDay('wed', this)">Wed — Lower A</button>
+      <button class="day-btn" onclick="switchDay('fri', this)">Fri — Upper B</button>
+      <button class="day-btn" onclick="switchDay('sat', this)">Sat — Lower B</button>
+    </div>
+
+    <!-- MON -->
+    <div id="day-mon" class="day-panel">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Focus: <strong>Chest + Back + Biceps</strong> &nbsp;·&nbsp; ~55–65 min total including cardio</p>
+      <div class="ex-wrap">
+      <table>
+        <tr><th>#</th><th>Exercise</th><th>Sets × Reps</th><th>Rest</th></tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">1</td>
+          <td><div class="ex-name">Barbell Bench Press</div><a class="yt-link" href="https://www.youtube.com/watch?v=4Y2ZdHCOXok" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 8–10</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">2</td>
+          <td><div class="ex-name">Lat Pulldown (cable machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=SALxEARiMkw" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 10–12</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">3</td>
+          <td><div class="ex-name">Incline Dumbbell Press</div><a class="yt-link" href="https://www.youtube.com/watch?v=8iPEnn-ltC8" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 10–12</td><td>75 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">4</td>
+          <td><div class="ex-name">Seated Cable Row</div><a class="yt-link" href="https://www.youtube.com/watch?v=GZbfZ033f74" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 10–12</td><td>75 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">5</td>
+          <td><div class="ex-name">Dumbbell Bicep Curl</div><a class="yt-link" href="https://www.youtube.com/watch?v=ykJmrZ5v0Oo" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 12–15</td><td>60 sec</td>
+        </tr>
+        <tr class="cardio-row">
+          <td style="font-weight:600;">🏃</td>
+          <td><div class="cardio-name">CARDIO — Incline Treadmill Walk or Elliptical (LISS)</div><div class="cardio-note">Keep heart rate at 60–70% max HR. Pace = you can still hold a conversation.</div></td>
+          <td colspan="2" style="color:var(--amber-text);font-weight:500;">15–20 min</td>
+        </tr>
+      </table>
+      </div>
+    </div>
+
+    <!-- WED -->
+    <div id="day-wed" class="day-panel" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Focus: <strong>Quads + Hamstrings + Glutes + Calves</strong> &nbsp;·&nbsp; ~55–65 min total including cardio</p>
+      <div class="ex-wrap">
+      <table>
+        <tr><th>#</th><th>Exercise</th><th>Sets × Reps</th><th>Rest</th></tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">1</td>
+          <td><div class="ex-name">Barbell Back Squat</div><a class="yt-link" href="https://www.youtube.com/watch?v=ultWZbUMPL8" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 8–10</td><td>2 min</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">2</td>
+          <td><div class="ex-name">Romanian Deadlift (RDL)</div><a class="yt-link" href="https://www.youtube.com/watch?v=JCXUYuzwNrM" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 10–12</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">3</td>
+          <td><div class="ex-name">Leg Press (machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=IZxyjW7MPJQ" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 12</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">4</td>
+          <td><div class="ex-name">Leg Curl (machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=s-MtznN7WQE" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 12–15</td><td>60 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">5</td>
+          <td><div class="ex-name">Standing Calf Raises</div><a class="yt-link" href="https://www.youtube.com/watch?v=-M4-G8p1fCI" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 15–20</td><td>60 sec</td>
+        </tr>
+        <tr class="cardio-row">
+          <td style="font-weight:600;">🏃</td>
+          <td><div class="cardio-name">CARDIO — Treadmill or Bike Sprints (HIIT)</div><div class="cardio-note">20 sec sprint, 40 sec slow. Best for building stamina and burning fat efficiently.</div></td>
+          <td colspan="2" style="color:var(--amber-text);font-weight:500;">15 min</td>
+        </tr>
+      </table>
+      </div>
+    </div>
+
+    <!-- FRI -->
+    <div id="day-fri" class="day-panel" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Focus: <strong>Shoulders + Triceps + Upper Back</strong> &nbsp;·&nbsp; ~55–65 min total including cardio</p>
+      <div class="ex-wrap">
+      <table>
+        <tr><th>#</th><th>Exercise</th><th>Sets × Reps</th><th>Rest</th></tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">1</td>
+          <td><div class="ex-name">Overhead Barbell Press (OHP)</div><a class="yt-link" href="https://www.youtube.com/watch?v=2yjwXTZQDDI" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 8–10</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">2</td>
+          <td><div class="ex-name">Chest-Supported / Seated Cable Row</div><a class="yt-link" href="https://www.youtube.com/watch?v=GZbfZ033f74" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 10–12</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">3</td>
+          <td><div class="ex-name">Dumbbell Lateral Raise</div><a class="yt-link" href="https://www.youtube.com/watch?v=3VcKaXpzqRo" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 15</td><td>60 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">4</td>
+          <td><div class="ex-name">Tricep Pushdown (cable machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=6Fzep104f0s" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 12–15</td><td>60 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">5</td>
+          <td><div class="ex-name">Face Pull (cable machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=rep-qVOkqgk" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 15</td><td>60 sec</td>
+        </tr>
+        <tr class="cardio-row">
+          <td style="font-weight:600;">🏃</td>
+          <td><div class="cardio-name">CARDIO — Incline Treadmill Walk (LISS)</div><div class="cardio-note">Zone 2 heart rate. Builds aerobic base, burns fat, without taxing recovery.</div></td>
+          <td colspan="2" style="color:var(--amber-text);font-weight:500;">15–20 min</td>
+        </tr>
+      </table>
+      </div>
+    </div>
+
+    <!-- SAT -->
+    <div id="day-sat" class="day-panel" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Focus: <strong>Deadlift + Quads + Hamstrings</strong> (power emphasis) &nbsp;·&nbsp; ~55–65 min total</p>
+      <div class="ex-wrap">
+      <table>
+        <tr><th>#</th><th>Exercise</th><th>Sets × Reps</th><th>Rest</th></tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">1</td>
+          <td><div class="ex-name">Conventional Deadlift</div><a class="yt-link" href="https://www.youtube.com/watch?v=op9kVnSso6Q" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>4 × 5–6</td><td>2–3 min</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">2</td>
+          <td><div class="ex-name">Goblet Squat (dumbbell) or Hack Squat</div><a class="yt-link" href="https://www.youtube.com/watch?v=DbFgADa2PL8" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 10–12</td><td>90 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">3</td>
+          <td><div class="ex-name">Walking Lunges (dumbbells)</div><a class="yt-link" href="https://www.youtube.com/watch?v=L8fvypPrzzs" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 12 each leg</td><td>75 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">4</td>
+          <td><div class="ex-name">Leg Extension (machine)</div><a class="yt-link" href="https://www.youtube.com/watch?v=YyvSfVjQeL0" target="_blank">▶ Watch tutorial on YouTube</a></td>
+          <td>3 × 15</td><td>60 sec</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:var(--text3);">5</td>
+          <td><div class="ex-name">Plank Hold</div></td>
+          <td>3 × 30–45 sec</td><td>60 sec</td>
+        </tr>
+        <tr class="cardio-row">
+          <td style="font-weight:600;">🏃</td>
+          <td><div class="cardio-name">CARDIO — Rowing Machine or Stationary Bike (HIIT)</div><div class="cardio-note">30 sec hard, 60 sec easy. Great for endurance and fat burn post-leg day.</div></td>
+          <td colspan="2" style="color:var(--amber-text);font-weight:500;">15 min</td>
+        </tr>
+      </table>
+      </div>
+    </div>
+
+    <div class="success-box" style="margin-top:16px;">
+      <strong>Progressive overload rule:</strong> Every week, try to add 1 more rep or 2.5–5 kg more weight to each lift. Write it down every session. No log = no progress tracking = no gains.
+    </div>
+
+  </div>
+
+  <!-- ===== FOOD GUIDE ===== -->
+  <div id="tab-food" class="panel">
+
+    <div class="food-grid">
+      <div class="card">
+        <div class="food-head" style="color:var(--green-text);">✅ Eat more of these</div>
+        <div class="food-item"><span class="dot dot-green"></span>Chicken breast / turkey</div>
+        <div class="food-item"><span class="dot dot-green"></span>Eggs &amp; egg whites</div>
+        <div class="food-item"><span class="dot dot-green"></span>Tuna / sardines / salmon</div>
+        <div class="food-item"><span class="dot dot-green"></span>Greek yogurt (low fat)</div>
+        <div class="food-item"><span class="dot dot-green"></span>Cottage cheese</div>
+        <div class="food-item"><span class="dot dot-green"></span>Lentils &amp; beans (ful, ads)</div>
+        <div class="food-item"><span class="dot dot-green"></span>Rice, oats, sweet potato</div>
+        <div class="food-item"><span class="dot dot-green"></span>All vegetables</div>
+        <div class="food-item"><span class="dot dot-green"></span>Fruits (moderate portions)</div>
+        <div class="food-item"><span class="dot dot-green"></span>Olive oil (in moderation)</div>
+        <div class="food-item"><span class="dot dot-green"></span>Nuts — small handful/day</div>
+        <div class="food-item"><span class="dot dot-green"></span>Whole wheat bread/pasta</div>
+      </div>
+      <div class="card">
+        <div class="food-head" style="color:var(--red-text);">❌ Minimize or avoid</div>
+        <div class="food-item"><span class="dot dot-red"></span>Fast food (burgers, fries)</div>
+        <div class="food-item"><span class="dot dot-red"></span>Chips &amp; packaged snacks</div>
+        <div class="food-item"><span class="dot dot-red"></span>Sugary drinks (Pepsi, juice)</div>
+        <div class="food-item"><span class="dot dot-red"></span>Deep-fried foods</div>
+        <div class="food-item"><span class="dot dot-red"></span>Pastries, cake, biscuits</div>
+        <div class="food-item"><span class="dot dot-red"></span>Processed meats (sausage)</div>
+        <div class="food-item"><span class="dot dot-red"></span>High-sugar cereals</div>
+        <div class="food-item"><span class="dot dot-red"></span>Excessive added oils</div>
+        <div class="food-item"><span class="dot dot-red"></span>Alcohol</div>
+        <div class="food-item"><span class="dot dot-red"></span>Ice cream / heavy sweets</div>
+        <div class="food-item"><span class="dot dot-red"></span>High-fat sauces / mayo</div>
+        <div class="food-item"><span class="dot dot-red"></span>White bread in excess</div>
+      </div>
+    </div>
+
+    <div class="sec-head">3 simple eating rules</div>
+    <div class="card">
+      <div class="rule">
+        <div class="rule-num">1</div>
+        <div class="rule-text"><strong>Protein first, every meal.</strong> Before thinking about anything else on your plate, make sure there's a protein source. Chicken, eggs, tuna, lentils — doesn't matter. Target 35–40g per meal across 4 meals.</div>
+      </div>
+      <div class="rule">
+        <div class="rule-num">2</div>
+        <div class="rule-text"><strong>Time your carbs around workouts.</strong> Eat more carbs (rice, oats, bread) in the meal before and after training. Eat fewer on rest days. This maximizes energy during lifts and uses carbs productively.</div>
+      </div>
+      <div class="rule" style="margin-bottom:0;">
+        <div class="rule-num">3</div>
+        <div class="rule-text"><strong>Don't over-restrict.</strong> This is a lifestyle change, not a crash diet. Aim for 80–90% clean eating. One bad meal won't ruin your progress — skipping gym days and eating junk consistently will.</div>
+      </div>
+    </div>
+
+    <div class="sec-head">Hydration</div>
+    <div class="card-body" style="font-size:13px;line-height:1.7;margin-bottom:20px;">
+      Drink <strong>at least 2.5–3 litres of water per day</strong>. More on training days. Dehydration tanks gym performance and is often mistaken for hunger. Plain water, black coffee, and unsweetened tea all count.
+    </div>
+
+    <div class="sec-head">Supplements worth considering (optional)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+      <div class="card"><div class="card-title">Creatine Monohydrate</div><div class="card-body" style="margin-top:4px;">5g/day, most studied supplement. Increases strength and muscle volume. Cheap and safe.</div></div>
+      <div class="card"><div class="card-title">Whey Protein</div><div class="card-body" style="margin-top:4px;">Only if you struggle to hit 150g/day from food. Not magic — just convenient protein.</div></div>
+      <div class="card"><div class="card-title">Vitamin D3</div><div class="card-body" style="margin-top:4px;">Most Egyptians are deficient. Impacts energy, muscle function, and mood. Worth testing.</div></div>
+    </div>
+
+  </div>
+
+  <!-- ===== APPS ===== -->
+  <div id="tab-apps" class="panel">
+
+    <div class="sec-head">Calorie &amp; macro tracking apps</div>
+    <div class="app-grid">
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--green-bg);color:var(--green-text);">Best overall</span>
+        <div class="app-name">MyFitnessPal</div>
+        <div class="app-desc">20M+ food items, barcode scanner, macro tracking. The most popular worldwide. Free tier works well.</div>
+        <a class="app-link" href="https://www.myfitnesspal.com" target="_blank">myfitnesspal.com ↗</a>
+      </div>
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--blue-bg);color:var(--blue-text);">Best free</span>
+        <div class="app-name">MyNetDiary</div>
+        <div class="app-desc">Free barcode scanning (no paywall unlike MFP), no ads, very fast logging. Underrated gem.</div>
+        <a class="app-link" href="https://www.mynetdiary.com" target="_blank">mynetdiary.com ↗</a>
+      </div>
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--amber-bg);color:var(--amber-text);">Most detailed</span>
+        <div class="app-name">Cronometer</div>
+        <div class="app-desc">Tracks 84 micronutrients, vitamins &amp; minerals. Best for deep insight into diet quality.</div>
+        <a class="app-link" href="https://cronometer.com" target="_blank">cronometer.com ↗</a>
+      </div>
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--blue-bg);color:var(--blue-text);">Science-based</span>
+        <div class="app-name">MacroFactor</div>
+        <div class="app-desc">Adaptive algorithm adjusts calorie targets based on your actual weight trend. Best for serious recomping.</div>
+        <a class="app-link" href="https://macrofactorapp.com" target="_blank">macrofactorapp.com ↗</a>
+      </div>
+    </div>
+
+    <div class="sec-head">TDEE &amp; macro calculator websites</div>
+    <div class="link-row">
+      <div><div class="link-row-name">TDEE Calculator</div><div class="link-row-sub">Most detailed — all activity levels + macro split breakdown</div></div>
+      <a href="https://tdeecalculator.net" target="_blank" class="pill pill-blue">tdeecalculator.net ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">IIFYM Macro Calculator</div><div class="link-row-sub">Exact macro targets based on your body and goal</div></div>
+      <a href="https://www.iifym.com/iifym-calculator/" target="_blank" class="pill pill-blue">iifym.com ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">Calculator.net Calorie Calculator</div><div class="link-row-sub">Clean and detailed — BMR + TDEE + activity multiplier</div></div>
+      <a href="https://www.calculator.net/calorie-calculator.html" target="_blank" class="pill pill-blue">calculator.net ↗</a>
+    </div>
+    <div class="link-row">
+      <div><div class="link-row-name">Healthy Eater Macro Calculator</div><div class="link-row-sub">Simple, beginner-friendly interface</div></div>
+      <a href="https://healthyeater.com/flexible-dieting-calculator" target="_blank" class="pill pill-blue">healthyeater.com ↗</a>
+    </div>
+
+    <div class="sec-head">Workout tracking apps</div>
+    <div class="app-grid">
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--green-bg);color:var(--green-text);">Recommended</span>
+        <div class="app-name">Hevy</div>
+        <div class="app-desc">Free workout log with progressive overload tracking. Shows your lifts trending over time. Very clean UI.</div>
+        <a class="app-link" href="https://www.hevyapp.com" target="_blank">hevyapp.com ↗</a>
+      </div>
+      <div class="app-card">
+        <span class="app-badge" style="background:var(--blue-bg);color:var(--blue-text);">Popular</span>
+        <div class="app-name">Strong App</div>
+        <div class="app-desc">Simple gym log — tracks sets, reps, weight per exercise. Shows personal records clearly.</div>
+        <a class="app-link" href="https://www.strong.app" target="_blank">strong.app ↗</a>
+      </div>
+    </div>
+
+    <div class="sec-head">YouTube channels to learn from</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+      <div class="card"><div class="card-title">Jeff Nippard</div><div class="card-body" style="margin-top:4px;">Science-based tutorials for every major lift. Best form videos on YouTube.</div><a class="app-link" href="https://www.youtube.com/@JeffNippard" target="_blank">@JeffNippard ↗</a></div>
+      <div class="card"><div class="card-title">Renaissance Periodization</div><div class="card-body" style="margin-top:4px;">Dr. Mike Israetel — deep dives into training science and muscle hypertrophy.</div><a class="app-link" href="https://www.youtube.com/@RenaissancePeriodization" target="_blank">@RenaissancePeriodization ↗</a></div>
+      <div class="card"><div class="card-title">Alan Thrall</div><div class="card-body" style="margin-top:4px;">Best beginner tutorials for squat, deadlift, and bench press form.</div><a class="app-link" href="https://www.youtube.com/@UntamedStrength" target="_blank">@UntamedStrength ↗</a></div>
+      <div class="card"><div class="card-title">Athlean-X</div><div class="card-body" style="margin-top:4px;">Jeff Cavaliere — sports science approach. Great for understanding the "why" behind exercises.</div><a class="app-link" href="https://www.youtube.com/@athleanx" target="_blank">@athleanx ↗</a></div>
+    </div>
+
+  </div>
+
+</div><!-- /main -->
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const btns = document.querySelectorAll('.tab-btn');
+  const names = ['overview','calories','training','food','apps'];
+  btns[names.indexOf(name)].classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function switchDay(day, btn) {
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.day-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('day-' + day).style.display = 'block';
+}
+</script>
+
+</body>
+</html>
